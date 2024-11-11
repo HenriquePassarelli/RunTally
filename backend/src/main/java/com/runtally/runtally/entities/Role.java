@@ -1,13 +1,16 @@
 package com.runtally.runtally.entities;
 
-import com.runtally.runtally.dto.RoleDTO;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
-@Entity
+@Entity(name = "ROLE")
 public class Role {
 
     @Id
@@ -15,12 +18,13 @@ public class Role {
     private Integer id;
 
     @Column(nullable = false, unique = true)
+    @NotEmpty(message = "Name is required")
     private String name;
-
 
     private String description;
 
     @ManyToMany(mappedBy = "roles")
+    @JsonIgnoreProperties({"roles"})
     private Collection<User> users;
 
     @ManyToMany
@@ -28,6 +32,8 @@ public class Role {
             joinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "permissions_id", referencedColumnName = "id")
     )
+    @NotEmpty(message = "Permissions are required")
+    @JsonIgnoreProperties({"roles"})
     private Collection<Permission> permissions;
 
     @Column(nullable = false, updatable = false)
@@ -41,13 +47,10 @@ public class Role {
     public Role() {
     }
 
-    public Role(String name, String description) {
+    public Role(String name, String description, Collection<Permission> permissions) {
         this.name = name;
         this.description = description;
-    }
-
-    public Role(RoleDTO roleDTO) {
-        this(roleDTO.name(), roleDTO.description());
+        this.permissions = permissions;
     }
 
     @PrePersist
@@ -55,6 +58,10 @@ public class Role {
     private void prePersistOrUpdate() {
         if (this.description == null) {
             this.description = "";
+        }
+
+        if (this.users == null) {
+            this.users = new ArrayList<>();
         }
     }
 
@@ -68,6 +75,14 @@ public class Role {
 
     public String getDescription() {
         return description;
+    }
+
+    public Collection<User> getUsers() {
+        return users;
+    }
+
+    public Collection<Permission> getPermissions() {
+        return permissions;
     }
 
     public void setName(String name) {
@@ -84,5 +99,9 @@ public class Role {
 
     public Long getLastModification() {
         return lastModification;
+    }
+
+    public void setPermissions(List<Permission> permissions) {
+        this.permissions = permissions;
     }
 }

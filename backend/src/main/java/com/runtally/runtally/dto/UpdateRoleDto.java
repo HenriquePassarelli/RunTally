@@ -1,4 +1,6 @@
 package com.runtally.runtally.dto;
 
-public record UpdateRoleDto(Integer id, String name, String description) {
+import java.util.List;
+
+public record UpdateRoleDto(Integer id, String name, String description, List<Integer> permissions) {
 }

@@ -1,19 +1,19 @@
 package com.runtally.runtally.entities;
 
-import com.runtally.runtally.dto.UserDTO;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.List;
 
 @Entity(name = "USER")
-public class User {
+public class User implements UserDetails {
 
     @Id
     @UuidGenerator(style = UuidGenerator.Style.AUTO)
@@ -29,13 +29,16 @@ public class User {
     private String password;
 
     @Column(nullable = false, unique = true, updatable = false)
-    private Number cpf;
+    @NotEmpty(message = "CPF cannot be empty")
+    private String cpf;
 
     @ManyToMany
     @JoinTable(
             name = "USERS_ROLES",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
+    @NotEmpty(message = "Roles cannot be empty")
+    @JsonIgnoreProperties("users")
     private Collection<Role> roles;
 
     @Column(nullable = false, updatable = false)
@@ -49,15 +52,12 @@ public class User {
     public User() {
     }
 
-    public User(String name, String email, String password, Number cpf) {
+    public User(String name, String email, String password, String cpf, Collection<Role> roles) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.cpf = cpf;
-    }
-
-    public User(UserDTO userDTO) {
-        this(userDTO.name(), userDTO.email(), userDTO.password(), userDTO.cpf());
+        this.roles = roles;
     }
 
     public String getId() {
@@ -72,11 +72,41 @@ public class User {
         return email;
     }
 
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of();
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
     public String getPassword() {
         return password;
     }
 
-    public Number getCpf() {
+    public String getCpf() {
         return cpf;
     }
 
@@ -88,12 +118,20 @@ public class User {
         return lastUpdate;
     }
 
+    public Collection<Role> getRoles() {
+        return roles;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public void setRoles(Collection<Role> roles) {
+        this.roles = roles;
     }
 
     @Override

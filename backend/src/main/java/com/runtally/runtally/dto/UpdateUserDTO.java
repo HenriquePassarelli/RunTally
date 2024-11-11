@@ -1,6 +1,8 @@
 package com.runtally.runtally.dto;
 
-public record UpdateUserDTO(String id, String name, String password) {
+import java.util.List;
+
+public record UpdateUserDTO(String id, String name, String password, List<Integer> roles) {
     @Override
     public String toString() {
         return "UpdateUserDTO{" +

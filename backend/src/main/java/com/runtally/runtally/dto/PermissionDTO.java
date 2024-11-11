@@ -1,12 +1,9 @@
 package com.runtally.runtally.dto;
 
-import java.util.List;
-
-public record RoleDTO(String name, String description, List<Integer> permissions) {
-
+public record PermissionDTO(String name, String description) {
     @Override
     public String toString() {
-        return "RoleDTO{" +
+        return "PermissionDTO{" +
                 "name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 '}';
